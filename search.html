@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>Neotropolis STMS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+   
+    <!-- Digital Ticket Pass Section -->
+    <div id="ticket-pass" class="section" style="display:none;">
+        <h1>Digital Ticket Pass</h1>
+        <div id="ticket-container">
+            <!-- Ticket details will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+      
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyAct1LIsbz4EfYJLZyja6Ml8RauPDHVsEc",
+          authDomain: "stsm-3a63e.firebaseapp.com",
+          projectId: "stsm-3a63e",
+          storageBucket: "stsm-3a63e.appspot.com",
+          messagingSenderId: "164928156139",
+          appId: "1:164928156139:web:3ac32881eececc34fa29ae",
+          measurementId: "G-5JVE38QDWE"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const database = getDatabase(app);
+
+        // Function to update the mail count
+        function updateMailCount(newCount) {
+            set(ref(database, 'mailbox/count'), newCount);
+        }
+
+        // Function to fetch the mail count from Firebase
+        function fetchMailCount() {
+            const dbRef = ref(database);
+            get(child(dbRef, 'mailbox/count')).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const count = snapshot.val();
+                    document.querySelector('.mailbox .fas').dataset.count = count;
+                } else {
+                    console.log("No data available");
+                }
+            }).catch((error) => {
+                console.error(error);
+            });
+        }
+
+        // Fetch mail count when the page loads
+        document.addEventListener('DOMContentLoaded', fetchMailCount);
+
+        // Function to fetch and display the digital ticket pass
+        function showTicketPass() {
+            const dbRef = ref(database);
+            get(child(dbRef, 'tickets/user_ticket')).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const ticketData = snapshot.val();
+                    const ticketContainer = document.getElementById('ticket-container');
+                    ticketContainer.innerHTML = `
+                        <div class="ticket">
+                            <p><strong>Ticket ID:</strong> ${ticketData.id}</p>
+                            <p><strong>Name:</strong> ${ticketData.name}</p>
+                            <p><strong>Route:</strong> ${ticketData.route}</p>
+                            <p><strong>Validity:</strong> ${ticketData.validity}</p>
+                            <p><strong>QR Code:</strong></p>
+                            <img src="${ticketData.qrCode}" alt="QR Code">
+                        </div>
+                    `;
+                    document.getElementById('ticket-pass').style.display = 'block';
+                } else {
+                    console.log("No ticket data available");
+                }
+            }).catch((error) => {
+                console.error(error);
+            });
+        }
+
+        // Example usage of showTicketPass function
+        // You can call this function when needed, e.g., after a successful login
+        // showTicketPass();
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>
